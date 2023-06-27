@@ -1,8 +1,9 @@
-﻿using BaseProject.Models;
+﻿using Web.Strategy.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Web.Strategy.Controllers;
 
-namespace BaseProject.Controllers
+namespace Web.Strategy.Controllers
 {
     public class AccountController : Controller
     {

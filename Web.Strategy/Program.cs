@@ -1,6 +1,7 @@
-using BaseProject.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Web.Strategy.Models;
+using Web.Strategy.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,30 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 }).AddEntityFrameworkStores<AppIdentityDbContext>()
 .AddDefaultTokenProviders();
 
+// HttpContext'e eriþebilmemiz için AddHttpContextAccessor ekliyoruz.
+builder.Services.AddHttpContextAccessor();
+
+// Önce cookie'ye eriþmemiz gerekiyor.HttpContext'e ihtiyacýmýz var dolayýsýyla.
+builder.Services.AddScoped<IProductRepository>(sp =>
+{
+    //GetService metodu eðer almaya çalýþtýðýmýz service yoksa geriye null döner.GetRequiredService metodu eðer almaya çalýþtýðýmýz service yoksa hata döner.
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var claims = httpContextAccessor.HttpContext.User.Claims.Where(x => x.Type == Settings.claimDatabaseType).FirstOrDefault();
+
+    var context = sp.GetRequiredService<AppIdentityDbContext>();
+
+    if (claims == null) return new ProductRepositoryFromSqlServer(context);
+
+    var databaseType = (EDatabaseType)int.Parse(claims.Value);
+
+    // Bir request esnasýnda herhangi bir classýn constructorýnda bu interface(IProductRepository) ile karþýlaþýldýðýnda bu interface i implement eden classlarýn hangisi olacaðýný dinamik olarak cookie de tutulan claim deðerine göre belirliyoruz.
+    return databaseType switch
+    {
+        EDatabaseType.SqlServer => new ProductRepositoryFromSqlServer(context),
+        EDatabaseType.MongoDb => new ProductRepositoryFromMongoDb(builder.Configuration),
+        _ => throw new NotImplementedException()
+    };
+});
 
 var app = builder.Build();
 
@@ -34,16 +59,16 @@ var identityDbContext = scope.ServiceProvider.GetRequiredService<AppIdentityDbCo
 // Biz yeni bir kullanýcý kaydetmek istiyoruz.
 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
-// Package Console' da Add-Migration,Update-Database kodlarýný yazmamýza gerek kalmadan, uygulama ayaða kalktýðý anda Migration'larý otomatik uygular.
+// Package Console' da Update-Database kodlarýný yazmamýza gerek kalmadan, uygulama ayaða kalktýðý anda Migration'larý otomatik uygular.
 identityDbContext.Database.Migrate();
 
 if (!userManager.Users.Any())
 {
-    userManager.CreateAsync(new AppUser { UserName = "Alper1", Email = "alperkaragoz@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper2", Email = "alperkaragoz2@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper3", Email = "alperkaragoz3@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper4", Email = "alperkaragoz4@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper5", Email = "alperkaragoz5@outlook.com", }, "Password123*" ).Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper1", Email = "alperkaragoz@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper2", Email = "alperkaragoz2@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper3", Email = "alperkaragoz3@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper4", Email = "alperkaragoz4@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper5", Email = "alperkaragoz5@outlook.com", }, "Password123*").Wait();
 }
 
 

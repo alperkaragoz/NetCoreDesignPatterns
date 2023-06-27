@@ -1,4 +1,4 @@
-namespace BaseProject.Models
+namespace Web.Strategy.Models
 {
     public class ErrorViewModel
     {
