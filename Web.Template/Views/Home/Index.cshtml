@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    int count = 0;
+}
+@model List<AppUser>
+
+@foreach (var item in Model)
+{
+    count++;
+    if (count == 1 || count % 5 == 1)
+    {
+        // Html.Raw kullanmadan birşey yazılırsa güvenlik amacıyla ilgili tagler içerisinde html tagları varsa yorumlanmaz.Güvenlik amacıyla yapılır.(Raw).İçerde zararlı script tagları olabilir.
+        @Html.Raw("<div class='row row-cols-1 row-cols-md-5 g-4'><div class='card-group'>")
+    }
+
+    <user-card app-user="@item"></user-card>
+
+    if (count % 5 == 0)
+    {
+        @Html.Raw("</div></div>")
+        ;
+    }
+}
