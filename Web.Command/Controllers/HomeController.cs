@@ -1,6 +1,8 @@
 ﻿using BaseProject.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Web.Command.Commands;
+using Web.Command.Models;
 
 namespace BaseProject.Controllers
 {
@@ -16,6 +18,12 @@ namespace BaseProject.Controllers
         public IActionResult Index()
         {
             return View();
+
+
+            //Amacımız dinamik bir yapı olduğu için aşağıdaki kodu kullanmayacağız.
+            //ExcelFile<Product> excelFile = new ExcelFile<Product>(new List<Product>());
+
+            //excelFile.Create();
         }
 
         public IActionResult Privacy()

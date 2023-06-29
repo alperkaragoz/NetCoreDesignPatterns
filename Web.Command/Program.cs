@@ -1,6 +1,10 @@
 using BaseProject.Models;
+using DinkToPdf.Contracts;
+using DinkToPdf;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Web.Command.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,13 +43,20 @@ identityDbContext.Database.Migrate();
 
 if (!userManager.Users.Any())
 {
-    userManager.CreateAsync(new AppUser { UserName = "Alper1", Email = "alperkaragoz@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper2", Email = "alperkaragoz2@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper3", Email = "alperkaragoz3@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper4", Email = "alperkaragoz4@outlook.com", }, "Password123*" ).Wait();
-userManager.CreateAsync(new AppUser { UserName = "Alper5", Email = "alperkaragoz5@outlook.com", }, "Password123*" ).Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper1", Email = "alperkaragoz@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper2", Email = "alperkaragoz2@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper3", Email = "alperkaragoz3@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper4", Email = "alperkaragoz4@outlook.com", }, "Password123*").Wait();
+    userManager.CreateAsync(new AppUser { UserName = "Alper5", Email = "alperkaragoz5@outlook.com", }, "Password123*").Wait();
+
+    Enumerable.Range(1, 30).ToList().ForEach(x =>
+    {
+        identityDbContext.Products.Add(new Product() { Name = $"Pen {x}", Price = x * 100, Stock = x + 25 });
+    });
+    identityDbContext.SaveChanges();
 }
 
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
